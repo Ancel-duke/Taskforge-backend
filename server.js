@@ -64,7 +64,11 @@ if (!isDev) {
 app.use(cors({
   origin: isDev 
     ? 'http://localhost:3000'
-    : [process.env.FRONTEND_URL, 'https://taskforge.netlify.app'],
+    : [
+        process.env.FRONTEND_URL, 
+        'https://taskforge.netlify.app',
+        'https://taskfoge.netlify.app'  // Your actual Netlify domain
+      ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
