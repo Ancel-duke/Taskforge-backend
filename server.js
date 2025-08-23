@@ -30,7 +30,11 @@ const io = socketIo(server, {
   cors: {
     origin: isDev 
       ? 'http://localhost:3000'
-      : [process.env.FRONTEND_URL, 'https://taskforge.netlify.app'],
+      : [
+          process.env.FRONTEND_URL, 
+          'https://taskforge.netlify.app',
+          'https://taskfoge.netlify.app'  // Your actual Netlify domain
+        ],
     methods: ['GET', 'POST'],
     credentials: true
   },
