@@ -110,8 +110,6 @@ app.get('/api/health', (req, res) => {
     uptime: process.uptime()
   })
 })
-  })
-})
 
 // Static file serving (with security headers in production)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
