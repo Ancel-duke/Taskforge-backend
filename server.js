@@ -111,6 +111,23 @@ app.get('/api/health', (req, res) => {
   })
 })
 
+// Root route handler
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'TaskForge API Server',
+    version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      users: '/api/users',
+      projects: '/api/projects',
+      invitations: '/api/invitations'
+    }
+  })
+})
+
 // Static file serving (with security headers in production)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   setHeaders: (res, path) => {
