@@ -375,6 +375,39 @@ const getTasks = async (req, res) => {
   }
 };
 
+// Get single task
+const getTask = async (req, res) => {
+  try {
+    const { id: projectId, taskId } = req.params;
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    if (!project.isMember(req.user._id)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const task = await Task.findById(taskId)
+      .populate('assignedTo', 'username name avatar')
+      .populate('createdBy', 'username name avatar');
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    if (!task.project.equals(projectId)) {
+      return res.status(400).json({ message: 'Task does not belong to this project' });
+    }
+
+    res.json(task);
+  } catch (error) {
+    console.error('Get task error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createProject,
   getProjects,
@@ -384,5 +417,6 @@ module.exports = {
   updateTask,
   deleteTask,
   getTasks,
+  getTask,
   getAnalytics
 };
