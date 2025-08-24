@@ -14,7 +14,6 @@ const router = express.Router();
 router.use(auth);
 
 // Invitation routes
-router.post('/projects/:projectId/invitations', sendInvitation);
 router.get('/', getInvitations);
 router.put('/:invitationId/accept', acceptInvitation);
 router.put('/:invitationId/reject', rejectInvitation);

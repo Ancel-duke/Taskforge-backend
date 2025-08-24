@@ -5,7 +5,7 @@ const User = require('../models/User');
 // Send invitation
 const sendInvitation = async (req, res) => {
   try {
-    const { projectId } = req.params;
+    const { id: projectId } = req.params;
     const { inviteeId, message } = req.body;
 
     // Check if project exists and user has permission
@@ -79,6 +79,35 @@ const getInvitations = async (req, res) => {
     res.json(invitations);
   } catch (error) {
     console.error('Get invitations error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get project invitations (for project owners)
+const getProjectInvitations = async (req, res) => {
+  try {
+    const { id: projectId } = req.params;
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    if (!project.isOwner(req.user._id)) {
+      return res.status(403).json({ message: 'Only project owner can view project invitations' });
+    }
+
+    const invitations = await Invitation.find({
+      project: projectId,
+      status: 'pending'
+    })
+    .populate('inviter', 'username name avatar')
+    .populate('invitee', 'username name avatar')
+    .sort({ createdAt: -1 });
+
+    res.json(invitations);
+  } catch (error) {
+    console.error('Get project invitations error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -196,6 +225,7 @@ const cancelInvitation = async (req, res) => {
 module.exports = {
   sendInvitation,
   getInvitations,
+  getProjectInvitations,
   acceptInvitation,
   rejectInvitation,
   cancelInvitation

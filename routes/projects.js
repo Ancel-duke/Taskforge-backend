@@ -13,6 +13,8 @@ const {
   getAnalytics
 } = require('../controllers/projectController');
 
+const { sendInvitation, getProjectInvitations } = require('../controllers/invitationController');
+
 const router = express.Router();
 
 // All routes require authentication
@@ -23,6 +25,8 @@ router.post('/', createProject);
 router.get('/', getProjects);
 router.get('/:id', getProject);
 router.post('/:id/members', addMember);
+router.post('/:id/invitations', sendInvitation);
+router.get('/:id/invitations', getProjectInvitations);
 router.get('/:id/analytics', getAnalytics);
 
 // Task routes
