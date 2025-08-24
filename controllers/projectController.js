@@ -152,6 +152,11 @@ const createTask = async (req, res) => {
     const { title, description, priority, dueDate, assignedTo } = req.body;
     const projectId = req.params.id;
 
+    // Validate required fields
+    if (!title || !title.trim()) {
+      return res.status(400).json({ message: 'Task title is required' });
+    }
+
     const project = await Project.findById(projectId);
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
@@ -161,10 +166,21 @@ const createTask = async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    // Validate assignedTo if provided
+    if (assignedTo) {
+      const assignedUser = await User.findById(assignedTo);
+      if (!assignedUser) {
+        return res.status(400).json({ message: 'Assigned user not found' });
+      }
+      if (!project.isMember(assignedTo)) {
+        return res.status(400).json({ message: 'Assigned user is not a project member' });
+      }
+    }
+
     const task = new Task({
-      title,
-      description,
-      priority,
+      title: title.trim(),
+      description: description ? description.trim() : '',
+      priority: priority || 'Medium',
       dueDate: dueDate ? new Date(dueDate) : null,
       assignedTo,
       project: projectId,
@@ -183,7 +199,9 @@ const createTask = async (req, res) => {
 
     // Emit socket event
     const io = req.app.get('io');
-    io.to(`project-${projectId}`).emit('taskCreated', task);
+    if (io) {
+      io.to(`project-${projectId}`).emit('taskCreated', task);
+    }
 
     res.status(201).json({
       message: 'Task created successfully',
@@ -237,7 +255,9 @@ const updateTask = async (req, res) => {
 
     // Emit socket event
     const io = req.app.get('io');
-    io.to(`project-${projectId}`).emit('taskUpdated', updatedTask);
+    if (io) {
+      io.to(`project-${projectId}`).emit('taskUpdated', updatedTask);
+    }
 
     res.json({
       message: 'Task updated successfully',
@@ -280,7 +300,9 @@ const deleteTask = async (req, res) => {
 
     // Emit socket event
     const io = req.app.get('io');
-    io.to(`project-${projectId}`).emit('taskDeleted', { taskId, projectId });
+    if (io) {
+      io.to(`project-${projectId}`).emit('taskDeleted', { taskId, projectId });
+    }
 
     res.json({ message: 'Task deleted successfully' });
   } catch (error) {
@@ -353,25 +375,37 @@ const getAnalytics = async (req, res) => {
 // Get tasks for a project
 const getTasks = async (req, res) => {
   try {
+    console.log('Getting tasks for project:', req.params.id);
+    console.log('User ID:', req.user._id);
+    
     const projectId = req.params.id;
 
     const project = await Project.findById(projectId);
     if (!project) {
+      console.log('Project not found:', projectId);
       return res.status(404).json({ message: 'Project not found' });
     }
 
+    console.log('Project found:', project.name);
+    console.log('Project members:', project.members);
+    console.log('Is member check:', project.isMember(req.user._id));
+
     if (!project.isMember(req.user._id)) {
+      console.log('Access denied - user not member');
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    console.log('Fetching tasks for project:', projectId);
     const tasks = await Task.find({ project: projectId })
       .populate('assignedTo', 'username name avatar')
       .sort({ createdAt: -1 });
 
+    console.log('Tasks found:', tasks.length);
     res.json(tasks);
   } catch (error) {
     console.error('Get tasks error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 

@@ -42,6 +42,9 @@ const io = socketIo(server, {
   allowEIO3: true
 })
 
+// Make socket.io instance available to routes
+app.set('io', io)
+
 // Security middleware (lighter in dev)
 if (!isDev) {
   app.use(helmet({
@@ -177,6 +180,21 @@ io.on('connection', (socket) => {
   if (!isDev) {
     console.log('User connected:', socket.id)
   }
+  
+  // Join project rooms when user connects
+  socket.on('joinProject', (projectId) => {
+    socket.join(`project-${projectId}`)
+    if (!isDev) {
+      console.log(`User ${socket.id} joined project: ${projectId}`)
+    }
+  })
+  
+  socket.on('leaveProject', (projectId) => {
+    socket.leave(`project-${projectId}`)
+    if (!isDev) {
+      console.log(`User ${socket.id} left project: ${projectId}`)
+    }
+  })
   
   socket.on('disconnect', (reason) => {
     if (!isDev) {
