@@ -56,8 +56,17 @@ const searchUsers = async (req, res) => {
       return res.status(400).json({ message: 'Username must be at least 2 characters' });
     }
 
+    // Validate that req.user exists
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // Search by username or name
     const users = await User.find({
-      username: { $regex: username, $options: 'i' },
+      $or: [
+        { username: { $regex: username, $options: 'i' } },
+        { name: { $regex: username, $options: 'i' } }
+      ],
       _id: { $ne: req.user._id } // Exclude current user
     })
     .select('username name avatar')
