@@ -15,9 +15,9 @@ router.use(auth);
 
 // Invitation routes
 router.post('/projects/:projectId/invitations', sendInvitation);
-router.get('/invitations', getInvitations);
-router.put('/invitations/:invitationId/accept', acceptInvitation);
-router.put('/invitations/:invitationId/reject', rejectInvitation);
-router.delete('/invitations/:invitationId', cancelInvitation);
+router.get('/', getInvitations);
+router.put('/:invitationId/accept', acceptInvitation);
+router.put('/:invitationId/reject', rejectInvitation);
+router.delete('/:invitationId', cancelInvitation);
 
 module.exports = router;
