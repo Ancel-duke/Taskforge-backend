@@ -350,6 +350,31 @@ const getAnalytics = async (req, res) => {
   }
 };
 
+// Get tasks for a project
+const getTasks = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    if (!project.isMember(req.user._id)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const tasks = await Task.find({ project: projectId })
+      .populate('assignedTo', 'username name avatar')
+      .sort({ createdAt: -1 });
+
+    res.json(tasks);
+  } catch (error) {
+    console.error('Get tasks error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createProject,
   getProjects,
@@ -358,5 +383,6 @@ module.exports = {
   createTask,
   updateTask,
   deleteTask,
+  getTasks,
   getAnalytics
 };

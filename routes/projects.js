@@ -8,6 +8,7 @@ const {
   createTask,
   updateTask,
   deleteTask,
+  getTasks,
   getAnalytics
 } = require('../controllers/projectController');
 
@@ -24,6 +25,7 @@ router.post('/:id/members', addMember);
 router.get('/:id/analytics', getAnalytics);
 
 // Task routes
+router.get('/:id/tasks', getTasks);
 router.post('/:id/tasks', createTask);
 router.put('/:id/tasks/:taskId', updateTask);
 router.delete('/:id/tasks/:taskId', deleteTask);
